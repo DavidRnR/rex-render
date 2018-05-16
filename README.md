@@ -1,2 +1,2 @@
-# rex-render
+# Rex Render
 Template Render Project
