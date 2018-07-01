@@ -1,30 +1,57 @@
 function rexStart() {
-    let myFor = document.querySelector('[rex-for]');
-    let renderValues = getRexForArray(myFor.attributes['rex-for'].value);
-    let myValueRender = that[renderValues[2]];
+    // Get All Elements with rex-for
+    let myFor = document.querySelectorAll('[rex-for]');
 
-    let myForChange = myFor.parentNode;
-    let elemContain = myFor.outerText;
-
-    for (let index = 0; index < myValueRender.length; index++) {
+    // Iterate Elemntes with rex-for
+    for (const rexElem of myFor) {
         
-        let contain = elemContain.replace("{{" + renderValues[0] + "}}", myValueRender[index]);
+        // Get data rex-for Ex: "person of persons"
+        let renderValues = getRexForArray(rexElem.attributes['rex-for'].value);
+        // Get var from js Ex: persons
+        let myValueRender = that[renderValues[2]];
 
-        if (index === 0) {
-            myFor.innerHTML = contain;
+        let parentRexNode;
+        let elemContain = rexElem.outerText;
+
+        for (let [key, value] of myValueRender.entries()) {
+
+            let elemContainObj = getObjectArray(elemContain);
+            let contain = elemContain;
+
+            // For Objects like person.name - person.age etc
+            if (elemContainObj && elemContainObj[0] && elemContainObj[0].indexOf('.') > -1) {
+                for (const obj of elemContainObj) {
+                    var afterDot = obj.substr(obj.indexOf('.') + 1);
+                    contain = contain.replace("{{" + renderValues[0] + '.' + afterDot + "}}", value[afterDot]);         
+                }
+
+            }
+            // Just a var EG name
+            else {
+                contain = contain.replace("{{" + renderValues[0] + "}}", value);
+            }
+
+            if (key === 0) {
+                rexElem.innerHTML = contain;
+                parentRexNode = rexElem;
+            }
+            else {
+                let newNode = document.createElement(rexElem.nodeName);
+
+                newNode.innerHTML = contain;
+                parentRexNode.insertAdjacentHTML('afterend', newNode.outerHTML);
+            }
         }
-        else {
-            let newNode = document.createElement(myFor.nodeName);
-
-            newNode.innerHTML = contain;
-            newNode.removeAttribute('rex-for');
-
-            myForChange.appendChild(newNode);
-        }
-
+        // Remove rex-for attr
+        parentRexNode.removeAttribute('rex-for');
     }
+
 }
 
+/**
+ * Get rex-for as array Eg: ["person","of","persons"]
+ * @param {*} rexFor 
+ */
 function getRexForArray(rexFor) {
     rexFor = rexFor.split(" ");
     var stringArray = new Array();
@@ -33,7 +60,42 @@ function getRexForArray(rexFor) {
             stringArray.push(rexFor[i]);
         }
     }
-    return stringArray;
+    return stringArray; //Eg: ["person","of","persons"]
+}
+
+
+/**
+ * Split string with {{object}} to get all the object to render
+ * @param {*} str 
+ */
+function getObjectArray(str) {
+    var objStrings = [];
+    var word = [];
+    var working = false;
+
+    for (var i = 0; i < str.length; ++i) {
+        if (!working) {
+            if (str[i] === '{') {
+                if (i + 1 < str.length && str[i + 1] === '{') {
+                    i++;
+                    word.push(str[i + 1]);
+                    working = true;
+                    i++;
+                }
+            }
+        }
+        else {
+            word.push(str[i]);
+            if (i + 1 < str.length && str[i + 1] === '}') {
+                i++;
+                word = word.join("");
+                objStrings.push(word);
+                word = [];
+                working = false;
+            }
+        }
+    }
+    return objStrings; // ["person.name", "person.age", "person.city"];
 }
 
 var that = this;
