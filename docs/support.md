@@ -11,5 +11,5 @@
 
 ### rex-if:
 
-- :x: 1- Support render an HTML element by a var: boolean _(ie: `<div rex-if="isValid"><div>`)_
-- :x: 2- Support render an HTML element by a boolean expression _(ie: `<div rex-if="(isValid && clients) ? true : false"><div>`)_
+- :x: 1- Support render a HTML element by a var: boolean _(ie: `<div rex-if="isValid"><div>`)_
+- :x: 2- Support render a HTML element by a boolean expression _(ie: `<div rex-if="(isValid && clients) ? true : false"><div>`)_
